@@ -1,0 +1,90 @@
+apply plugin: 'com.android.application'
+apply plugin: "com.netease.hearttouch.hthotfix"
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion '23.0.3'
+
+    defaultConfig {
+        applicationId "com.netease.hearttouch.hotfixsamples"
+        minSdkVersion 14
+        targetSdkVersion 22
+        versionCode 1
+        versionName "1.0"
+        multiDexEnabled true
+        ndk {
+            moduleName "HotfixSampleJniLib"
+            abiFilters "armeabi", "armeabi-v7a", "arm64-v8a", "x86"
+        }
+    }
+
+    signingConfigs {
+        debug {
+            storeFile file('../hotfix_test.jks')
+            storePassword "111111"
+            keyAlias "heartouch"
+            keyPassword "111111"
+        }
+        release{
+            storeFile file('../hotfix_test.jks')
+            storePassword "111111"
+            keyAlias "heartouch"
+            keyPassword "111111"
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['src/main/jnilibs']
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+        debug {
+            debuggable true
+        }
+    }
+
+    splits {
+        abi {
+            enable true
+            reset()
+            include 'armeabi'
+            universalApk false
+        }
+    }
+}
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.netease.hearttouch:ht-hotfix-gradle:0.0.2'
+    }
+}
+
+hthotfix{
+    scanRef false
+    generatePatch  false
+    storeFile file('../hotfix_test.jks')
+    storePassword "111111"
+    keyAlias "heartouch"
+    keyPassword "111111"
+    includePackage=["com.netease.hearttouch.hotfixsamples"]
+    excludeClass =["com.netease.hearttouch.hotfixsamples.HFApplication"]
+    soPatch true
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:23.0.1'
+    compile project(':library')
+    dependencies { compile 'com.android.support:multidex:1.0.0' }
+}
